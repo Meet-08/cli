@@ -14,12 +14,11 @@ env:
 permissions:
   contents: write
   id-token: write
-  pull-requests: write
 
 jobs:
   release:
     name: Release
-    if: github.repository_owner == 'TanStack'
+    if: ${{ github.repository_owner == 'TanStack' && !contains(github.event.head_commit.message, '[skip ci]') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -36,17 +35,28 @@ jobs:
         run: pnpm --filter @tanstack/cli exec playwright install --with-deps chrome
       - name: E2E Blocking
         run: pnpm --filter @tanstack/cli test:e2e
-      - name: Run Changesets (version or publish)
-        uses: changesets/action@v1.5.3
-        with:
-          version: pnpm run changeset:version
-          publish: pnpm run changeset:publish
-          commit: "ci: Version Packages"
-          title: "ci: Version Packages"
+      - name: Generate Semantic Changeset Fallback
+        run: pnpm run changeset:generate
+
+      - name: Prepare Release Context
+        id: release
+        run: pnpm run release:prepare
+
+      - name: Version Packages
+        if: steps.release.outputs.has_changesets == 'true'
+        run: pnpm run changeset:version
+
+      - name: Detect Versioning Changes
+        if: steps.release.outputs.has_changesets == 'true'
+        id: changes
+        run: pnpm run release:detect-changes
+
+      - name: Commit Version Updates
+        if: steps.release.outputs.has_changesets == 'true' && steps.changes.outputs.has_changes == 'true'
+        run: pnpm run release:commit-and-push
+
+      - name: Publish Packages
+        if: steps.release.outputs.has_changesets == 'true' && steps.changes.outputs.has_changes == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Comment on PRs about release
-        if: steps.changesets.outputs.published == 'true'
-        uses: tanstack/config/.github/comment-on-release@main
-        with:
-          published-packages: ${{ steps.changesets.outputs.publishedPackages }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: pnpm run changeset:publish -- --tag "${{ steps.release.outputs.npm_tag }}"
