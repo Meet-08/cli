@@ -10,7 +10,10 @@ export const Route = createFileRoute('/blog/$slug')({
     const post = Array.from(
       new Map(
         [...allBlogs]
-          .sort((a, b) => new Date(b.pubDate).valueOf() - new Date(a.pubDate).valueOf())
+          .sort(
+            (a, b) =>
+              new Date(b.pubDate).valueOf() - new Date(a.pubDate).valueOf(),
+          )
           .map((entry) => [entry.slug, entry]),
       ).values(),
     ).find((entry) => entry.slug === params.slug)
@@ -56,11 +59,12 @@ function BlogPost() {
         <p className="mb-6 text-sm text-[var(--sea-ink-soft)]">
           {new Date(post.pubDate).toLocaleDateString()}
         </p>
-        <div
-          className="prose prose-slate prose-headings:text-[var(--sea-ink)] prose-p:text-[var(--sea-ink-soft)] prose-li:text-[var(--sea-ink-soft)] prose-ul:text-[var(--sea-ink-soft)] prose-ol:text-[var(--sea-ink-soft)] prose-strong:text-[var(--sea-ink)] prose-a:text-[var(--lagoon-deep)] max-w-none"
-        >
+        <div className="prose prose-slate prose-headings:text-[var(--sea-ink)] prose-p:text-[var(--sea-ink-soft)] prose-li:text-[var(--sea-ink-soft)] prose-ul:text-[var(--sea-ink-soft)] prose-ol:text-[var(--sea-ink-soft)] prose-strong:text-[var(--sea-ink)] prose-a:text-[var(--lagoon-deep)] max-w-none">
           {post.mdx ? (
-            <MDXContent code={post.mdx} components={{ MdxCallout, MdxMetrics }} />
+            <MDXContent
+              code={post.mdx}
+              components={{ MdxCallout, MdxMetrics }}
+            />
           ) : (
             <div dangerouslySetInnerHTML={{ __html: post.html ?? '' }} />
           )}

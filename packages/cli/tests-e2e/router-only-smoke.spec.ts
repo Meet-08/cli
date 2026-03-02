@@ -14,7 +14,7 @@ test('@blocking creates a React router-only app and navigates every internal lin
   try {
     await page.goto(fixture.url)
     await expect(
-      page.getByRole('heading', { name: 'Island hours, but for product teams.' }),
+      page.getByRole('heading', { name: 'Start simple, ship quickly.' }),
     ).toBeVisible()
 
     const homeLinks = await page
@@ -25,36 +25,22 @@ test('@blocking creates a React router-only app and navigates every internal lin
           .sort(),
       )
 
-    expect(homeLinks).toContain('/blog')
+    expect(homeLinks).toContain('/about')
 
-    await page.locator('a[href="/blog"]').first().click()
-    await expect(page).toHaveURL(/\/blog\/?$/)
-    await expect(page.getByRole('heading', { name: 'Blog' })).toBeVisible()
-
-    const blogPostLinks = await page
-      .locator('a[href^="/blog/"]')
-      .evaluateAll((anchors) =>
-        Array.from(new Set(anchors.map((anchor) => anchor.getAttribute('href') || '')))
-          .filter(Boolean)
-          .sort(),
-      )
-
-    expect(blogPostLinks.length).toBeGreaterThan(0)
-
-    for (const postPath of blogPostLinks) {
-      await page.locator(`a[href="${postPath}"]`).first().click()
-      await expect(page).toHaveURL(new RegExp(`${postPath}/?$`))
-      await expect(page.locator('h1').first()).toBeVisible()
-      await page.goBack()
-      await expect(page).toHaveURL(/\/blog\/?$/)
-    }
+    await page.locator('a[href="/about"]').first().click()
+    await expect(page).toHaveURL(/\/about\/?$/)
+    await expect(
+      page.getByRole('heading', { name: 'A small starter with room to grow.' }),
+    ).toBeVisible()
 
     await page.goto(`${fixture.url}/about`)
-    await expect(page.getByRole('heading', { name: 'Built for shipping fast.' })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'A small starter with room to grow.' }),
+    ).toBeVisible()
 
     await page.goto(fixture.url)
     await expect(
-      page.getByRole('heading', { name: 'Island hours, but for product teams.' }),
+      page.getByRole('heading', { name: 'Start simple, ship quickly.' }),
     ).toBeVisible()
   } finally {
     try {

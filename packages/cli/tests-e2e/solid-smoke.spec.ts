@@ -11,8 +11,9 @@ test('@blocking creates a Solid app and renders the home route', async ({ page }
 
   try {
     await page.goto(fixture.url)
-    await expect(page.getByRole('heading', { name: /TANSTACK/i })).toBeVisible()
-    await expect(page.getByText('The framework for next generation AI applications')).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'Start simple, ship quickly.' }),
+    ).toBeVisible()
   } finally {
     try {
       guards.assertClean()

@@ -27,8 +27,7 @@ import "@fontsource/inter/400.css"
 import { HydrationScript } from 'solid-js/web'
 import { Suspense } from 'solid-js'
 
-<% if (addOns.length || integrations.length || routes.length) { %>import Header from '../components/Header'
-<% } %>
+import Header from '../components/Header'
 <% for(const addOn of addOns) {
   for(const init of addOn.main?.initialize || []) { %>
   <%- init %>
@@ -52,9 +51,7 @@ function RootComponent() {
         <body>
           <HeadContent />
           <Suspense>
-            <% if (addOns.length || integrations.length || routes.length) { %>
-              <Header />
-            <% } %>
+            <Header />
             <Outlet />
             <TanStackRouterDevtools />
             <% for(const integration of integrations.filter(i => i.type === 'layout')) { %>

@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite'
 import { devtools } from '@tanstack/devtools-vite'
-import contentCollections from '@content-collections/vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 <% if (addOnEnabled.paraglide) { -%>
 import { paraglideVitePlugin } from "@inlang/paraglide-js"
@@ -21,7 +20,6 @@ const config = defineConfig({
     outdir: './src/paraglide',
     strategy: ['url', "baseLocale"],
   }), <% } %><% for(const integration of integrations.filter(i => i.type === 'vite-plugin')) { %><%- integrationImportCode(integration) %>,<% } %>
-    contentCollections(),
     tsconfigPaths({ projects: ['./tsconfig.json'] }),
     tailwindcss(),
     <% if (routerOnly) { %>tanstackRouter({ target: 'react', autoCodeSplitting: true }),<% } else { %>tanstackStart(),<% } %>

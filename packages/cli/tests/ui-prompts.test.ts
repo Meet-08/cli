@@ -7,6 +7,7 @@ import {
   selectAddOns,
   selectGit,
   selectPackageManager,
+  selectTemplate,
   selectToolchain,
 } from '../src/ui-prompts'
 
@@ -51,6 +52,33 @@ describe('selectPackageManager', () => {
     vi.spyOn(clack, 'isCancel').mockImplementation(() => true)
 
     await expect(selectPackageManager()).rejects.toThrowError(/exit/)
+  })
+})
+
+describe('selectTemplate', () => {
+  it('should select a template id', async () => {
+    vi.spyOn(clack, 'select').mockImplementation(async () => 'blog')
+    vi.spyOn(clack, 'isCancel').mockImplementation(() => false)
+
+    const selectedTemplate = await selectTemplate([
+      { id: 'blog', name: 'Blog', description: 'A blog template' },
+    ])
+
+    expect(selectedTemplate).toBe('blog')
+  })
+
+  it('should return undefined when no templates are available', async () => {
+    const selectedTemplate = await selectTemplate([])
+    expect(selectedTemplate).toBeUndefined()
+  })
+
+  it('should exit on cancel', async () => {
+    vi.spyOn(clack, 'select').mockImplementation(async () => Symbol.for('cancel'))
+    vi.spyOn(clack, 'isCancel').mockImplementation(() => true)
+
+    await expect(
+      selectTemplate([{ id: 'blog', name: 'Blog' }]),
+    ).rejects.toThrowError(/exit/)
   })
 })
 

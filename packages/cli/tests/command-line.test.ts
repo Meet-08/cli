@@ -340,6 +340,87 @@ describe('normalizeOptions', () => {
     }
   })
 
+  it('prefers framework-matching template ids from registry', async () => {
+    __testRegisterFramework({
+      id: 'react',
+      name: 'React',
+      getAddOns: () => [],
+      supportedModes: {
+        'file-router': {
+          displayName: 'File Router',
+          description: 'TanStack Router using files to define the routes',
+          forceTypescript: true,
+        },
+      },
+    })
+    __testRegisterFramework({
+      id: 'solid',
+      name: 'Solid',
+      getAddOns: () => [],
+      supportedModes: {
+        'file-router': {
+          displayName: 'File Router',
+          description: 'TanStack Router using files to define the routes',
+          forceTypescript: true,
+        },
+      },
+    })
+
+    const originalRegistry = process.env.CTA_REGISTRY
+    process.env.CTA_REGISTRY = 'https://registry.example/registry.json'
+
+    fetch
+      .mockResponseOnce(
+        JSON.stringify({
+          templates: [
+            {
+              name: 'Blog',
+              description: 'React blog template',
+              url: './react/blog/template.json',
+              mode: 'file-router',
+              framework: 'react',
+            },
+            {
+              name: 'Blog',
+              description: 'Solid blog template',
+              url: './solid/blog/template.json',
+              mode: 'file-router',
+              framework: 'solid',
+            },
+          ],
+        }),
+      )
+      .mockResponseOnce(
+        JSON.stringify({
+          id: 'blog',
+          typescript: true,
+          framework: 'solid',
+          mode: 'file-router',
+          type: 'starter',
+          description: 'Solid blog template',
+          name: 'Blog',
+          dependsOn: [],
+          files: {},
+          deletedFiles: [],
+        }),
+      )
+
+    try {
+      const options = await normalizeOptions({
+        projectName: 'test',
+        framework: 'solid',
+        template: 'blog',
+      })
+
+      expect(options?.framework?.id).toBe('solid')
+      expect(options?.starter?.id).toBe(
+        'https://registry.example/solid/blog/template.json',
+      )
+    } finally {
+      process.env.CTA_REGISTRY = originalRegistry
+    }
+  })
+
   it('should default to react if no framework is provided', async () => {
     __testRegisterFramework({
       id: 'react',

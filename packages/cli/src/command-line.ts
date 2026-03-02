@@ -52,6 +52,14 @@ function slugifyStarterName(value: string) {
     .replace(/^-+|-+$/g, '')
 }
 
+function humanizeStarterId(value: string) {
+  return value
+    .split(/[-_]/g)
+    .filter(Boolean)
+    .map((part) => part[0].toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
 function isLikelyStarterUrlOrPath(value: string) {
   return (
     /^https?:\/\//i.test(value) ||
@@ -88,7 +96,10 @@ function getStarterIdsFromUrl(starterUrl: string) {
   return ids
 }
 
-function resolveMonorepoStarterById(starterId: string) {
+function resolveMonorepoStarterById(
+  starterId: string,
+  preferredFramework?: string,
+) {
   const normalized = starterId.toLowerCase().trim()
   const idVariants = Array.from(
     new Set([
@@ -106,8 +117,12 @@ function resolveMonorepoStarterById(starterId: string) {
     resolve(cwd, '../../..'),
   ]
 
+  const frameworkOrder = preferredFramework
+    ? [preferredFramework, ...['react', 'solid'].filter((f) => f !== preferredFramework)]
+    : ['react', 'solid']
+
   for (const root of rootCandidates) {
-    for (const framework of ['react', 'solid']) {
+    for (const framework of frameworkOrder) {
       for (const id of idVariants) {
         const templatePath = resolve(root, 'examples', framework, id, 'template.json')
         if (fs.existsSync(templatePath)) {
@@ -125,7 +140,10 @@ function resolveMonorepoStarterById(starterId: string) {
   return undefined
 }
 
-async function resolveStarterSpecifier(starterSpecifier: string) {
+export async function resolveStarterSpecifier(
+  starterSpecifier: string,
+  preferredFramework?: string,
+) {
   const normalized = starterSpecifier.trim()
 
   if (!normalized || isLikelyStarterUrlOrPath(normalized)) {
@@ -135,7 +153,7 @@ async function resolveStarterSpecifier(starterSpecifier: string) {
   const registry = await getRawRegistry()
   if (registry && registry.starters?.length) {
     const lookup = normalized.toLowerCase()
-    const match = registry.starters.find((starter) => {
+    const matches = registry.starters.filter((starter) => {
       const candidateIds = new Set<string>()
       candidateIds.add(starter.name.toLowerCase())
       candidateIds.add(slugifyStarterName(starter.name))
@@ -147,12 +165,25 @@ async function resolveStarterSpecifier(starterSpecifier: string) {
       return candidateIds.has(lookup)
     })
 
-    if (match) {
-      return match.url
+    const frameworkMatch = preferredFramework
+      ? matches.find(
+          (starter) => starter.framework.toLowerCase() === preferredFramework,
+        )
+      : undefined
+
+    if (frameworkMatch) {
+      return frameworkMatch.url
+    }
+
+    if (matches.length > 0) {
+      return matches[0].url
     }
   }
 
-  const monorepoStarterPath = resolveMonorepoStarterById(normalized)
+  const monorepoStarterPath = resolveMonorepoStarterById(
+    normalized,
+    preferredFramework,
+  )
   if (monorepoStarterPath) {
     return monorepoStarterPath
   }
@@ -178,6 +209,110 @@ async function resolveStarterSpecifier(starterSpecifier: string) {
   throw new Error(
     `Unknown template id "${normalized}". Available built-in templates: ${availableIds.join(', ')}`,
   )
+}
+
+export async function listTemplateChoices(preferredFramework?: string): Promise<
+  Array<{
+    id: string
+    name: string
+    description?: string
+    framework: string
+  }>
+> {
+  const frameworkFilter = preferredFramework?.toLowerCase()
+  const deduped = new Map<
+    string,
+    { id: string; name: string; description?: string; framework: string }
+  >()
+
+  const registry = await getRawRegistry()
+  for (const starter of registry?.starters || []) {
+    const framework = starter.framework.toLowerCase()
+    if (frameworkFilter && framework !== frameworkFilter) {
+      continue
+    }
+
+    const ids = Array.from(getStarterIdsFromUrl(starter.url))
+    const id = ids[0] || slugifyStarterName(starter.name)
+    if (!id) {
+      continue
+    }
+
+    const key = `${framework}:${id}`
+    if (!deduped.has(key)) {
+      deduped.set(key, {
+        id,
+        name: starter.name,
+        description: starter.description,
+        framework,
+      })
+    }
+  }
+
+  const cwd = process.cwd()
+  const rootCandidates = [
+    cwd,
+    resolve(cwd, '..'),
+    resolve(cwd, '../..'),
+    resolve(cwd, '../../..'),
+  ]
+
+  const frameworks = frameworkFilter ? [frameworkFilter] : ['react', 'solid']
+
+  for (const root of rootCandidates) {
+    for (const framework of frameworks) {
+      const frameworkDir = resolve(root, 'examples', framework)
+      if (!fs.existsSync(frameworkDir) || !fs.statSync(frameworkDir).isDirectory()) {
+        continue
+      }
+
+      for (const entry of fs.readdirSync(frameworkDir, { withFileTypes: true })) {
+        if (!entry.isDirectory()) {
+          continue
+        }
+
+        const id = entry.name
+        const key = `${framework}:${id}`
+        if (deduped.has(key)) {
+          continue
+        }
+
+        const templatePath = resolve(frameworkDir, id, 'template.json')
+        const starterPath = resolve(frameworkDir, id, 'starter.json')
+        if (!fs.existsSync(templatePath) && !fs.existsSync(starterPath)) {
+          continue
+        }
+
+        let name = humanizeStarterId(id)
+        let description: string | undefined
+
+        const templateInfoPath = resolve(frameworkDir, id, 'template-info.json')
+        if (fs.existsSync(templateInfoPath)) {
+          try {
+            const info = JSON.parse(fs.readFileSync(templateInfoPath, 'utf8')) as {
+              name?: string
+              description?: string
+            }
+            if (info.name) {
+              name = info.name
+            }
+            description = info.description
+          } catch {
+            // Ignore malformed template-info files and use fallback values.
+          }
+        }
+
+        deduped.set(key, {
+          id,
+          name,
+          description,
+          framework,
+        })
+      }
+    }
+  }
+
+  return Array.from(deduped.values()).sort((a, b) => a.name.localeCompare(b.name))
 }
 
 export function validateLegacyCreateFlags(cliOptions: CliOptions): {
@@ -317,8 +452,12 @@ export async function normalizeOptions(
     cliOptions.starter = cliOptions.templateId
   }
 
+  const preferredFramework = (cliOptions.framework || 'react').toLowerCase()
+
   const starter = !routerOnly && cliOptions.starter
-    ? await loadStarter(await resolveStarterSpecifier(cliOptions.starter))
+    ? await loadStarter(
+        await resolveStarterSpecifier(cliOptions.starter, preferredFramework),
+      )
     : undefined
 
   // TypeScript and Tailwind are always enabled with TanStack Start

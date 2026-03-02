@@ -1,7 +1,6 @@
-<% if (routerOnly) { ignoreFile() } %>
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/solid-router'
 import { allBlogs } from 'content-collections'
-import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '#/lib/site'
+import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from '../lib/site'
 
 export const Route = createFileRoute('/rss.xml')({
   server: {

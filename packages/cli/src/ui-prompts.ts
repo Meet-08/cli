@@ -60,6 +60,38 @@ export async function selectPackageManager(): Promise<PackageManager> {
   return packageManager
 }
 
+export async function selectTemplate(
+  templates: Array<{ id: string; name: string; description?: string }>,
+): Promise<string | undefined> {
+  if (templates.length === 0) {
+    return undefined
+  }
+
+  const selected = await select({
+    message: 'Would you like to start from a template?',
+    options: [
+      {
+        value: undefined,
+        label: 'None (base starter)',
+        hint: 'Two-page baseline (Home + About)',
+      },
+      ...templates.map((template) => ({
+        value: template.id,
+        label: template.name,
+        hint: template.description,
+      })),
+    ],
+    initialValue: undefined,
+  })
+
+  if (isCancel(selected)) {
+    cancel('Operation cancelled.')
+    process.exit(0)
+  }
+
+  return selected
+}
+
 // Track if we've shown the multiselect help text
 let hasShownMultiselectHelp = false
 

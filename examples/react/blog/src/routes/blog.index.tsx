@@ -21,7 +21,10 @@ function BlogIndex() {
   const postsByDate = Array.from(
     new Map(
       [...allBlogs]
-        .sort((a, b) => new Date(b.pubDate).valueOf() - new Date(a.pubDate).valueOf())
+        .sort(
+          (a, b) =>
+            new Date(b.pubDate).valueOf() - new Date(a.pubDate).valueOf(),
+        )
         .map((post) => [post.slug, post]),
     ).values(),
   )
@@ -77,11 +80,17 @@ function BlogIndex() {
               />
             ) : null}
             <h2 className="m-0 text-2xl font-semibold text-[var(--sea-ink)]">
-              <Link to="/blog/$slug" params={{ slug: post.slug }} className="no-underline">
+              <Link
+                to="/blog/$slug"
+                params={{ slug: post.slug }}
+                className="no-underline"
+              >
                 {post.title}
               </Link>
             </h2>
-            <p className="mb-2 mt-2 text-sm text-[var(--sea-ink-soft)]">{post.description}</p>
+            <p className="mb-2 mt-2 text-sm text-[var(--sea-ink-soft)]">
+              {post.description}
+            </p>
             <p className="m-0 text-xs text-[var(--sea-ink-soft)]">
               {new Date(post.pubDate).toLocaleDateString()}
             </p>

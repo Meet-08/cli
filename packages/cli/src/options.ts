@@ -4,6 +4,7 @@ import {
   finalizeAddOns,
   getFrameworkById,
   getPackageManager,
+  loadStarter,
   populateAddOnOptionsDefaults,
   readConfigFile,
 } from '@tanstack/create'
@@ -17,8 +18,13 @@ import {
   selectExamples,
   selectGit,
   selectPackageManager,
+  selectTemplate,
   selectToolchain,
 } from './ui-prompts.js'
+import {
+  listTemplateChoices,
+  resolveStarterSpecifier,
+} from './command-line.js'
 
 import {
   getCurrentDirectoryName,
@@ -72,6 +78,39 @@ export async function promptForCreateOptions(
     !!cliOptions.routerOnly ||
     (isLegacyTemplate ? template !== 'file-router' : false)
 
+  if (!cliOptions.starter) {
+    if (cliOptions.template && !isLegacyTemplate) {
+      cliOptions.starter = cliOptions.template
+    } else if (cliOptions.templateId) {
+      cliOptions.starter = cliOptions.templateId
+    }
+  }
+
+  if (!routerOnly && !cliOptions.starter) {
+    const starterChoices = await listTemplateChoices(options.framework.id)
+    const selectedTemplateId = await selectTemplate(
+      starterChoices.map((choice) => ({
+        id: choice.id,
+        name: choice.name,
+        description: choice.description,
+      })),
+    )
+    if (selectedTemplateId) {
+      cliOptions.starter = selectedTemplateId
+    }
+  }
+
+  const starter = !routerOnly && cliOptions.starter
+    ? await loadStarter(
+        await resolveStarterSpecifier(cliOptions.starter, options.framework.id),
+      )
+    : undefined
+
+  if (starter) {
+    options.framework = getFrameworkById(starter.framework) || options.framework
+    options.mode = starter.mode
+  }
+
   // TypeScript is always enabled with file-router
   options.typescript = true
 
@@ -114,6 +153,9 @@ export async function promptForCreateOptions(
   }
 
   if (!routerOnly) {
+    for (const addOn of starter?.dependsOn || []) {
+      addOns.add(addOn)
+    }
     for (const addOn of forcedAddOns) {
       addOns.add(addOn)
     }
@@ -186,6 +228,10 @@ export async function promptForCreateOptions(
   options.git = cliOptions.git ?? (await selectGit())
   if (cliOptions.install === false) {
     options.install = false
+  }
+
+  if (starter) {
+    options.starter = starter
   }
 
   return options

@@ -15,6 +15,20 @@
       "banner": "./resume/.template/banner.png",
       "mode": "file-router",
       "framework": "react"
+    },
+    {
+      "name": "Blog",
+      "description": "A content-first blog template for TanStack Start",
+      "url": "./blog/template.json",
+      "mode": "file-router",
+      "framework": "react"
+    },
+    {
+      "name": "Blog",
+      "description": "A content-first blog template for TanStack Start",
+      "url": "../solid/blog/template.json",
+      "mode": "file-router",
+      "framework": "solid"
     }
   ]
 }
