@@ -60,6 +60,4 @@ jobs:
 
       - name: Publish Packages
         if: steps.release.outputs.has_changesets == 'true' && steps.changes.outputs.has_changes == 'true'
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: pnpm run changeset:publish -- --tag "${{ steps.release.outputs.npm_tag }}"
+        run: pnpm changeset publish --tag "${{ steps.release.outputs.npm_tag }}"
