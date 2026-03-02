@@ -1,5 +1,15 @@
 # @tanstack/create
 
+## 0.62.2
+
+### Patch Changes
+
+- Make the default base starter minimal (Home + About) for React and Solid, and add a new `blog` template option for both frameworks. ([`f33f8d4`](https://github.com/TanStack/cli/commit/f33f8d4954d9ad6771871257a4e1e58feee9b34d))
+
+  Interactive `create` now prompts for a template when one is not provided, and template id resolution prefers the selected framework when ids overlap.
+
+- Add pnpm build approvals for `esbuild` and `lightningcss` in base app templates and preserve `pnpm.onlyBuiltDependencies` when add-ons add their own entries. ([`16fcd67`](https://github.com/TanStack/cli/commit/16fcd674c0f74c1c62cf97b0042060d5a51981ef))
+
 ## 0.62.1
 
 ### Patch Changes

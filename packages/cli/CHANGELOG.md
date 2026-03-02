@@ -1,5 +1,22 @@
 # @tanstack/cli
 
+## 0.61.0
+
+### Minor Changes
+
+- Remove the built-in MCP server from the CLI by dropping `tanstack mcp` and all MCP transport/tooling code. ([`78e3734`](https://github.com/TanStack/cli/commit/78e373444c5bcaf2ab59d2142e8b8b0cab415bbb))
+
+  Add CLI-native agent introspection commands (`libraries`, `doc`, `search-docs`, `ecosystem`) and JSON output for `create --list-add-ons` / `create --addon-details` so AI agents can rely on CLI commands directly.
+
+### Patch Changes
+
+- Make the default base starter minimal (Home + About) for React and Solid, and add a new `blog` template option for both frameworks. ([`f33f8d4`](https://github.com/TanStack/cli/commit/f33f8d4954d9ad6771871257a4e1e58feee9b34d))
+
+  Interactive `create` now prompts for a template when one is not provided, and template id resolution prefers the selected framework when ids overlap.
+
+- Updated dependencies [[`f33f8d4`](https://github.com/TanStack/cli/commit/f33f8d4954d9ad6771871257a4e1e58feee9b34d), [`16fcd67`](https://github.com/TanStack/cli/commit/16fcd674c0f74c1c62cf97b0042060d5a51981ef)]:
+  - @tanstack/create@0.62.2
+
 ## 0.60.1
 
 ### Patch Changes
