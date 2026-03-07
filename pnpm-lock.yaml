@@ -215,6 +215,9 @@ importers:
       '@tanstack/config':
         specifier: ^0.16.2
         version: 0.16.3(@types/node@22.15.3)(@typescript-eslint/utils@8.49.0(eslint@9.25.1(jiti@2.6.1))(typescript@5.8.3))(esbuild@0.25.12)(eslint-import-resolver-node@0.3.9)(eslint@9.25.1(jiti@2.6.1))(rollup@4.46.2)(typescript@5.8.3)(vite@7.1.7(@types/node@22.15.3)(jiti@2.6.1)(lightningcss@1.29.2)(terser@5.39.0)(tsx@4.19.4)(yaml@2.8.2))
+      '@tanstack/intent':
+        specifier: ^0.0.13
+        version: 0.0.13
       '@types/diff':
         specifier: ^5.2.0
         version: 5.2.3
@@ -1010,6 +1013,10 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       eslint: ^8.0.0 || ^9.0.0
+
+  '@tanstack/intent@0.0.13':
+    resolution: {integrity: sha512-J/geETt+AGQBMJpSVC7urEN/E1eAmgNHb6y/Z01LJfnmWXza17cMDReBOvT7LueYUeNV93PUBznMVPn5siJa3Q==}
+    hasBin: true
 
   '@tybys/wasm-util@0.10.1':
     resolution: {integrity: sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg==}
@@ -4305,6 +4312,10 @@ snapshots:
       - eslint-import-resolver-node
       - supports-color
       - typescript
+
+  '@tanstack/intent@0.0.13':
+    dependencies:
+      yaml: 2.8.2
 
   '@tybys/wasm-util@0.10.1':
     dependencies:

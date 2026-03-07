@@ -7,7 +7,7 @@ description: >
   provider options, and router-only compatibility constraints.
 type: composition
 library: tanstack-cli
-library_version: "0.61.0"
+library_version: "0.62.1"
 requires:
   - create-app-scaffold
   - query-docs-library-metadata

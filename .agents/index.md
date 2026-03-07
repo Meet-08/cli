@@ -116,11 +116,26 @@ npx @tanstack/cli ecosystem --category database --json
 | `packages/cli/src/cli.ts`         | CLI command definitions   |
 | `packages/create/src/frameworks/` | Framework implementations |
 | `packages/create/src/app-*.ts`    | App creation logic        |
-| `.tanstack.json`                  | Generated project config  |
+| `.cta.json`                       | Generated project config  |
 
 
-## Playbook Skills
+## Intent Skills
 
-This project uses TanStack Playbooks. Run `npx playbook list` to discover
-available AI coding skills. Before working with a library that has skills,
-read the relevant SKILL.md file at the path shown in the list output.
+This project uses [TanStack Intent](https://github.com/TanStack/intent). Run `npx @tanstack/intent install` to set up skill-to-task mappings for your coding agent. Before working on a task, read the relevant SKILL.md file in `packages/cli/skills/`.
+
+<!-- intent-skills:start -->
+# Skill mappings — when working in these areas, load the linked skill file into context.
+skills:
+  - task: "scaffold a new TanStack app with create command, framework, template, toolchain, deployment, or add-on flags"
+    load: "packages/cli/skills/create-app-scaffold/SKILL.md"
+  - task: "add add-ons to an existing project using tanstack add"
+    load: "packages/cli/skills/add-addons-existing-app/SKILL.md"
+  - task: "query docs, list add-ons, inspect add-on details, or fetch library metadata for agent context"
+    load: "packages/cli/skills/query-docs-library-metadata/SKILL.md"
+  - task: "choose ecosystem integrations like auth providers, ORMs, or deployment targets"
+    load: "packages/cli/skills/choose-ecosystem-integrations/SKILL.md"
+  - task: "author, compile, or dev-watch custom add-ons or templates"
+    load: "packages/cli/skills/maintain-custom-addons-dev-watch/SKILL.md"
+<!-- intent-skills:end -->
+
+

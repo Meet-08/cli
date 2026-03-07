@@ -6,7 +6,7 @@ description: >
   --addon-details for agent-safe discovery and preflight validation.
 type: core
 library: tanstack-cli
-library_version: "0.61.0"
+library_version: "0.62.1"
 ---
 
 # Query Docs And Library Metadata
@@ -30,7 +30,9 @@ npx @tanstack/cli libraries --json
 ### Fetch a specific docs page with explicit version
 
 ```bash
-npx @tanstack/cli doc --library router --version latest --path /docs/framework/react/guide/routing
+# Syntax: tanstack doc <library-id> <path> [--docs-version <version>]
+npx @tanstack/cli doc router framework/react/guide/routing
+npx @tanstack/cli doc router framework/react/guide/routing --docs-version latest
 ```
 
 ### Search docs for implementation targets
@@ -45,16 +47,19 @@ npx @tanstack/cli search-docs "server functions" --library start --json
 
 Wrong:
 ```bash
-npx @tanstack/cli doc --library made-up-lib --version latest --path /docs
+# Wrong: --library and --version are not flags on doc; path must not include /docs/ prefix
+npx @tanstack/cli doc --library router --version latest --path /docs/framework/react/guide/routing
 ```
 
 Correct:
 ```bash
+# Step 1: resolve a valid library id
 npx @tanstack/cli libraries --json
-npx @tanstack/cli doc --library router --version latest --path /docs/framework/react/guide/routing
+# Step 2: fetch using positional args — library id then doc path (no /docs/ prefix)
+npx @tanstack/cli doc router framework/react/guide/routing
 ```
 
-`doc` validates identifiers against registry metadata and fails when any segment is not real.
+`doc` takes `<library>` and `<path>` as positional arguments (not flags), and the path must not include a leading `/docs/` segment. Use `--docs-version` (not `--version`) to pin a specific version.
 
 Source: packages/cli/src/cli.ts:746
 

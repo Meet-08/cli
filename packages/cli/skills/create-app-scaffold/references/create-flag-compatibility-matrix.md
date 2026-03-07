@@ -1,6 +1,6 @@
 # Create Flag Compatibility Matrix
 
-Targets `@tanstack/cli` v0.61.0.
+Targets `@tanstack/cli` v0.62.1.
 
 ## Compatibility
 

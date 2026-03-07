@@ -6,7 +6,7 @@ description: >
   project metadata preconditions.
 type: core
 library: tanstack-cli
-library_version: "0.61.0"
+library_version: "0.62.1"
 ---
 
 # Add Add-ons To Existing App

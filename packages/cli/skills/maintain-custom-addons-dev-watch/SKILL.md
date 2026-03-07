@@ -2,11 +2,11 @@
 name: maintain-custom-addons-dev-watch
 description: >
   Build and iterate custom add-ons/templates with tanstack add-on init,
-  add-on compile, add-on dev, and tanstack dev --dev-watch, including sync
+  add-on compile, add-on dev, and tanstack create --dev-watch, including sync
   loop preconditions, watch-path validation, and project metadata constraints.
 type: lifecycle
 library: tanstack-cli
-library_version: "0.61.0"
+library_version: "0.62.1"
 requires:
   - add-addons-existing-app
 ---
@@ -30,10 +30,11 @@ npx @tanstack/cli add-on compile
 npx @tanstack/cli add-on dev
 ```
 
-### Sync watched package output into target app
+### Sync watched framework directory into a sandbox target app
 
 ```bash
-npx @tanstack/cli dev --dev-watch ../my-addon-package
+# --dev-watch is a flag on `create`, not on `dev`
+npx @tanstack/cli create my-sandbox --dev-watch ../path/to/framework-dir
 ```
 
 ### Re-run compile before apply when changing metadata
@@ -49,33 +50,33 @@ npx @tanstack/cli add my-custom-addon
 
 Wrong:
 ```bash
-npx @tanstack/cli dev --dev-watch ../my-addon-package --no-install
+npx @tanstack/cli create my-sandbox --dev-watch ../my-addon-package --no-install
 ```
 
 Correct:
 ```bash
-npx @tanstack/cli dev --dev-watch ../my-addon-package
+npx @tanstack/cli create my-sandbox --dev-watch ../my-addon-package
 ```
 
 Dev-watch rejects `--no-install`, so automated loops fail before any sync work starts.
 
 Source: packages/cli/src/dev-watch.ts:112
 
-### HIGH Start dev-watch without valid package entry
+### HIGH Start dev-watch without valid framework directory
 
 Wrong:
 ```bash
-npx @tanstack/cli dev --dev-watch ../missing-or-invalid-package
+npx @tanstack/cli create my-sandbox --dev-watch ../missing-or-invalid-dir
 ```
 
 Correct:
 ```bash
-npx @tanstack/cli dev --dev-watch ../valid-addon-package
+npx @tanstack/cli create my-sandbox --dev-watch ../valid-framework-dir
 ```
 
-Watch setup validates path and package metadata first, so invalid targets fail before file syncing begins.
+Watch setup validates that the path exists, is a directory, and contains at least one of `add-ons/`, `assets/`, or `framework.json`. Invalid targets fail before file syncing begins.
 
-Source: packages/cli/src/dev-watch.ts:100
+Source: packages/cli/src/command-line.ts:599
 
 ### CRITICAL Author add-on from code-router project
 

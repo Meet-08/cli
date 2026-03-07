@@ -7,10 +7,13 @@
   "types": "./dist/types/index.d.ts",
   "files": [
     "dist",
-    "skills"
+    "skills",
+    "bin",
+    "!skills/_artifacts"
   ],
   "bin": {
-    "tanstack": "./dist/bin.js"
+    "tanstack": "./dist/bin.js",
+    "intent": "./bin/intent.js"
   },
   "scripts": {
     "build": "tsc",
@@ -61,6 +64,7 @@
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "@tanstack/config": "^0.16.2",
+    "@tanstack/intent": "^0.0.13",
     "@types/diff": "^5.2.0",
     "@types/node": "^22.13.4",
     "@types/semver": "^7.7.0",
