@@ -1,5 +1,11 @@
 # @tanstack/create
 
+## 0.63.2
+
+### Patch Changes
+
+- Fix Tanstack Query Integration ([#418](https://github.com/TanStack/cli/pull/418))
+
 ## 0.63.1
 
 ### Patch Changes
