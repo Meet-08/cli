@@ -1,5 +1,11 @@
 # @tanstack/cli
 
+## 0.63.0
+
+### Minor Changes
+
+- Add anonymous CLI telemetry with PostHog-backed command and step tracking, plus first-run disclosure and opt-out controls via config, env vars, and `tanstack telemetry` commands. ([`4176bf3`](https://github.com/TanStack/cli/commit/4176bf371babd896bd5e2c1561aa069e04d5a39e))
+
 ## 0.62.5
 
 ### Patch Changes
