@@ -1,5 +1,11 @@
 # @tanstack/create
 
+## 0.63.3
+
+### Patch Changes
+
+- Upgrade to Vite 8 and replace `vite-tsconfig-paths` plugin with native `resolve.tsconfigPaths` option. Fix `useStore` call in AI assistant add-on to pass required selector function. ([#428](https://github.com/TanStack/cli/pull/428))
+
 ## 0.63.2
 
 ### Patch Changes
