@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import { resolve } from 'node:path'
-import { Command, InvalidArgumentError } from 'commander'
+import { Command, InvalidArgumentError, Option } from 'commander'
 import { cancel, confirm, intro, isCancel, log } from '@clack/prompts'
 import chalk from 'chalk'
 import semver from 'semver'
@@ -83,6 +83,26 @@ function sanitizeIdList(values: Array<string>) {
         .filter((value): value is string => Boolean(value)),
     ),
   )
+}
+
+const AGENT_FLAG = '--agent'
+
+function addHiddenAgentFlag<T extends Command>(cmd: T) {
+  if (cmd.options.some((option) => option.long === AGENT_FLAG)) {
+    return cmd
+  }
+
+  cmd.addOption(
+    new Option(AGENT_FLAG, 'internal: invocation originated from an agent').hideHelp(),
+  )
+
+  return cmd
+}
+
+function getInvocationTelemetryProperties() {
+  return {
+    invoked_by_agent: process.argv.includes(AGENT_FLAG),
+  }
 }
 
 function getStarterTelemetryProperties(value?: string) {
@@ -417,6 +437,7 @@ export function cli({
     const startedAt = Date.now()
     currentTelemetry = telemetry
     telemetry.captureCommandStarted(command, {
+      ...getInvocationTelemetryProperties(),
       ...opts.properties,
       cli_version: VERSION,
     })
@@ -437,6 +458,8 @@ export function cli({
     .name(name)
     .description(`${appName} CLI`)
     .version(VERSION, '-v, --version', 'output the current version')
+
+  addHiddenAgentFlag(program)
 
   // Helper to create the create command action handler
   async function handleCreate(projectName: string, options: CliOptions) {
@@ -710,6 +733,7 @@ export function cli({
 
   // Helper to configure create command options
   function configureCreateCommand(cmd: Command) {
+    addHiddenAgentFlag(cmd)
     cmd.argument('[project-name]', 'name of the project')
 
     if (!defaultFramework) {
@@ -917,6 +941,9 @@ export function cli({
   program
     .command('libraries')
     .description('List TanStack libraries')
+    .addOption(
+      new Option(AGENT_FLAG, 'internal: invocation originated from an agent').hideHelp(),
+    )
     .option(
       '--group <group>',
       `filter by group (${LIBRARY_GROUPS.join(', ')})`,
@@ -991,6 +1018,9 @@ export function cli({
   program
     .command('doc')
     .description('Fetch a TanStack documentation page')
+    .addOption(
+      new Option(AGENT_FLAG, 'internal: invocation originated from an agent').hideHelp(),
+    )
     .argument('<library>', 'library ID (eg. query, router, table)')
     .argument('<path>', 'documentation path (eg. framework/react/overview)')
     .option('--docs-version <version>', 'docs version (default: latest)', 'latest')
@@ -1098,6 +1128,9 @@ export function cli({
   program
     .command('search-docs')
     .description('Search TanStack documentation')
+    .addOption(
+      new Option(AGENT_FLAG, 'internal: invocation originated from an agent').hideHelp(),
+    )
     .argument('<query>', 'search query')
     .option('--library <id>', 'filter to specific library')
     .option('--framework <name>', 'filter to specific framework')
@@ -1164,6 +1197,9 @@ export function cli({
   program
     .command('ecosystem')
     .description('List TanStack ecosystem partners')
+    .addOption(
+      new Option(AGENT_FLAG, 'internal: invocation originated from an agent').hideHelp(),
+    )
     .option('--category <category>', 'filter by category')
     .option('--library <id>', 'filter by TanStack library')
     .option('--json', 'output JSON for automation', false)
@@ -1251,6 +1287,9 @@ export function cli({
   program
     .command('pin-versions')
     .description('Pin versions of the TanStack libraries')
+    .addOption(
+      new Option(AGENT_FLAG, 'internal: invocation originated from an agent').hideHelp(),
+    )
     .action(async () => {
       try {
         await runWithTelemetry('pin-versions', {}, async (telemetry) => {
@@ -1333,6 +1372,9 @@ Remove your node_modules directory and package lock file and re-install.`,
   telemetryCommand
     .command('status')
     .description('Show anonymous telemetry status')
+    .addOption(
+      new Option(AGENT_FLAG, 'internal: invocation originated from an agent').hideHelp(),
+    )
     .option('--json', 'output JSON for automation', false)
     .action(async (options: { json: boolean }) => {
       const status = await getTelemetryStatus({ createIfMissing: true })
@@ -1359,6 +1401,9 @@ Remove your node_modules directory and package lock file and re-install.`,
   telemetryCommand
     .command('enable')
     .description('Enable anonymous telemetry')
+    .addOption(
+      new Option(AGENT_FLAG, 'internal: invocation originated from an agent').hideHelp(),
+    )
     .action(async () => {
       await setTelemetryEnabled(true)
       console.log('Anonymous telemetry enabled')
@@ -1367,6 +1412,9 @@ Remove your node_modules directory and package lock file and re-install.`,
   telemetryCommand
     .command('disable')
     .description('Disable anonymous telemetry')
+    .addOption(
+      new Option(AGENT_FLAG, 'internal: invocation originated from an agent').hideHelp(),
+    )
     .action(async () => {
       await setTelemetryEnabled(false)
       console.log('Anonymous telemetry disabled')
@@ -1375,6 +1423,9 @@ Remove your node_modules directory and package lock file and re-install.`,
   // === ADD SUBCOMMAND ===
   program
     .command('add')
+    .addOption(
+      new Option(AGENT_FLAG, 'internal: invocation originated from an agent').hideHelp(),
+    )
     .argument(
       '[add-on...]',
       'Name of the add-ons (or add-ons separated by spaces or commas)',
@@ -1437,6 +1488,9 @@ Remove your node_modules directory and package lock file and re-install.`,
   addOnCommand
     .command('init')
     .description('Initialize an add-on from the current project')
+    .addOption(
+      new Option(AGENT_FLAG, 'internal: invocation originated from an agent').hideHelp(),
+    )
     .action(async () => {
       try {
         await runWithTelemetry('add-on:init', {}, async () => {
@@ -1450,6 +1504,9 @@ Remove your node_modules directory and package lock file and re-install.`,
   addOnCommand
     .command('compile')
     .description('Update add-on from the current project')
+    .addOption(
+      new Option(AGENT_FLAG, 'internal: invocation originated from an agent').hideHelp(),
+    )
     .action(async () => {
       try {
         await runWithTelemetry('add-on:compile', {}, async () => {
@@ -1464,6 +1521,9 @@ Remove your node_modules directory and package lock file and re-install.`,
     .command('dev')
     .description(
       'Watch project files and continuously refresh .add-on and add-on.json',
+    )
+    .addOption(
+      new Option(AGENT_FLAG, 'internal: invocation originated from an agent').hideHelp(),
     )
     .action(async () => {
       try {
@@ -1481,6 +1541,9 @@ Remove your node_modules directory and package lock file and re-install.`,
   templateCommand
     .command('init')
     .description('Initialize a project template from the current project')
+    .addOption(
+      new Option(AGENT_FLAG, 'internal: invocation originated from an agent').hideHelp(),
+    )
     .action(async () => {
       try {
         await runWithTelemetry('template:init', {}, async () => {
@@ -1494,6 +1557,9 @@ Remove your node_modules directory and package lock file and re-install.`,
   templateCommand
     .command('compile')
     .description('Compile the template JSON file for the current project')
+    .addOption(
+      new Option(AGENT_FLAG, 'internal: invocation originated from an agent').hideHelp(),
+    )
     .action(async () => {
       try {
         await runWithTelemetry('template:compile', {}, async () => {
@@ -1510,6 +1576,9 @@ Remove your node_modules directory and package lock file and re-install.`,
   starterCommand
     .command('init')
     .description('Deprecated alias: initialize a project template')
+    .addOption(
+      new Option(AGENT_FLAG, 'internal: invocation originated from an agent').hideHelp(),
+    )
     .action(async () => {
       try {
         await runWithTelemetry('starter:init', {}, async () => {
@@ -1523,6 +1592,9 @@ Remove your node_modules directory and package lock file and re-install.`,
   starterCommand
     .command('compile')
     .description('Deprecated alias: compile the template JSON file')
+    .addOption(
+      new Option(AGENT_FLAG, 'internal: invocation originated from an agent').hideHelp(),
+    )
     .action(async () => {
       try {
         await runWithTelemetry('starter:compile', {}, async () => {
