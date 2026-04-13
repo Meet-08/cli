@@ -1,5 +1,31 @@
 # @tanstack/create
 
+## 0.63.4
+
+### Patch Changes
+
+- Add anonymous CLI telemetry with command and step tracking, a hidden `--agent` flag for agent-originated invocations, first-run disclosure, and opt-out controls via config, env vars, and `tanstack telemetry` commands. ([`bfcd6f5`](https://github.com/TanStack/cli/commit/bfcd6f566f4376891faa977ad61046c3a1880c7a))
+
+  Deprioritize the Neon add-on in create flows without removing support for the add-on itself.
+
+## 0.63.3
+
+### Patch Changes
+
+- Upgrade to Vite 8 and replace `vite-tsconfig-paths` plugin with native `resolve.tsconfigPaths` option. Fix `useStore` call in AI assistant add-on to pass required selector function. ([#428](https://github.com/TanStack/cli/pull/428))
+
+## 0.63.2
+
+### Patch Changes
+
+- Fix Tanstack Query Integration ([#418](https://github.com/TanStack/cli/pull/418))
+
+## 0.63.1
+
+### Patch Changes
+
+- Fix the Neon add-on Vite plugin template to use the `postgres` export from `vite-plugin-neon-new` so newly scaffolded apps start without import errors and avoid deprecated plugin package warnings. ([`ddfaaaa`](https://github.com/TanStack/cli/commit/ddfaaaac81cdc60965052b82da1f1482155c560c))
+
 ## 0.63.0
 
 ### Minor Changes
