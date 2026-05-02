@@ -13,18 +13,28 @@ import { resolvePackageJSONLatest } from './npm-resolver.js'
 import { createTemplateFile } from './template-file.js'
 import { installShadcnComponents } from './integrations/shadcn.js'
 import { setupGit } from './integrations/git.js'
+import { setupIntent } from './integrations/intent.js'
 import { runSpecialSteps } from './special-steps/index.js'
 
 import type { Environment, FileBundleHandler, Options } from './types.js'
 
-function isDemoRoutePath(path?: string) {
+function isDemoFilePath(path?: string) {
   if (!path) return false
   const normalized = path.replace(/\\/g, '/')
-  return (
+
+  if (
     normalized.includes('/routes/demo/') ||
-    normalized.includes('/routes/demo.') ||
-    normalized.includes('/routes/example/') ||
-    normalized.includes('/routes/example.')
+    normalized.includes('/routes/example/')
+  ) {
+    return true
+  }
+
+  const filename = normalized.split('/').pop() || ''
+  return (
+    filename.startsWith('demo.') ||
+    filename.startsWith('demo-') ||
+    filename.startsWith('example.') ||
+    filename.startsWith('example-')
   )
 }
 
@@ -38,20 +48,25 @@ function stripExamplesFromOptions(options: Options): Options {
     .map((addOn) => {
       const filteredRoutes = (addOn.routes || []).filter(
         (route) =>
-          !isDemoRoutePath(route.path) &&
+          !isDemoFilePath(route.path) &&
           !(route.url && route.url.startsWith('/demo')),
+      )
+      
+      const filteredIntegrations = (addOn.integrations || []).filter(
+        (integration) => !isDemoFilePath(integration.path)
       )
 
       return {
         ...addOn,
         routes: filteredRoutes,
+        integrations: filteredIntegrations,
         getFiles: async () => {
           const files = await addOn.getFiles()
-          return files.filter((file) => !isDemoRoutePath(file))
+          return files.filter((file) => !isDemoFilePath(file))
         },
         getDeletedFiles: async () => {
           const deletedFiles = await addOn.getDeletedFiles()
-          return deletedFiles.filter((file) => !isDemoRoutePath(file))
+          return deletedFiles.filter((file) => !isDemoFilePath(file))
         },
       }
     })
@@ -280,6 +295,8 @@ async function runCommandsAndInstallDependencies(
   }
 
   await installShadcnComponents(environment, options.targetDir, options)
+
+  await setupIntent(environment, options.targetDir, options)
 }
 
 async function seedEnvValues(environment: Environment, options: Options) {

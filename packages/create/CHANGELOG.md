@@ -1,5 +1,77 @@
 # @tanstack/create
 
+## 0.64.0
+
+### Minor Changes
+
+- feat(cli): auto-install TanStack Intent during scaffolding ([#442](https://github.com/TanStack/cli/pull/442))
+
+  `tanstack create` and `tanstack add` now run `npx @tanstack/intent install`
+  after dependency installation, wiring up skill mappings for coding agents.
+  The behavior is controlled by a new `--intent` / `--no-intent` flag (default
+  on) and persists to `.cta.json` so subsequent `add` invocations honor the
+  original choice. Failures are surfaced as warnings instead of aborting the
+  scaffold.
+
+## 0.63.9
+
+### Patch Changes
+
+- fix(create): correct netlify.toml key, eslint scripts, and missing eslint dep ([`e38729f`](https://github.com/TanStack/cli/commit/e38729fe0b6a16e8d34417d2334baf2b2db94942))
+
+  - The generated `netlify.toml` for both React and Solid used `dir` under
+    `[build]`, which is not a valid Netlify configuration key. Per Netlify's
+    TanStack Start guide it must be `publish`. Closes #423.
+  - The eslint toolchain had `format` and `check` scripts swapped: `format`
+    ran prettier in read-only mode while `check` mutated files. Swap them so
+    `format` writes (`prettier --write . && eslint --fix`) and `check` is
+    read-only (`prettier --check .`). Closes #403.
+  - `@tanstack/eslint-config` lists `eslint` as a peer dependency, so eslint
+    was not installed by package managers that don't auto-install peers. Add
+    `eslint` to `devDependencies` in the eslint toolchain. Closes #417.
+
+## 0.63.8
+
+### Patch Changes
+
+- fix(cli): require Node.js >=20 and surface a clear error on older runtimes ([#438](https://github.com/TanStack/cli/pull/438))
+
+  Older Node versions (e.g. Node 16) lack `events.addAbortListener`, which is
+  used transitively by the CLI. Running on those versions produced a cryptic
+  `SyntaxError: ... does not provide an export named 'addAbortListener'` during
+  module instantiation. Both packages now declare `engines.node: ">=20"` so
+  package managers warn at install time, and the CLI bin performs an early
+  runtime check that prints an actionable message before any modules load.
+
+  Closes #433
+
+## 0.63.7
+
+### Patch Changes
+
+- chore: bump solid base and example to vite 8 ([#437](https://github.com/TanStack/cli/pull/437))
+
+## 0.63.6
+
+### Patch Changes
+
+- Auto-generated changeset from semantic commits on main.
+
+  - chore: update to TS6.0, fix deprecated tsconfig options (#421) (847b396)
+
+## 0.63.5
+
+### Patch Changes
+
+- Fix demo/example files leaking into projects when users opt out of demo pages. ([#434](https://github.com/TanStack/cli/pull/434))
+
+  - Strip add-on demo support files in `src/lib/`, `src/hooks/`, `src/data/`, `src/components/`, `src/store/`, and any `demo.*` / `demo-*` / `example.*` / `example-*` files.
+  - Strip example image assets under `public/`.
+  - Generate a minimal base starter (no Header, Footer, ThemeToggle, about page, or styled index page) when declining demo/example pages.
+  - Render Better Auth header-user component as `null` when its demo route is excluded, instead of linking to a non-existent route.
+
+  Closes #422, #409.
+
 ## 0.63.4
 
 ### Patch Changes

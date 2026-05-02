@@ -183,6 +183,7 @@ function getCreateTelemetryProperties(projectName: string, options: CliOptions) 
     framework: options.framework ? sanitizeId(options.framework) : undefined,
     git: options.git,
     install: options.install !== false,
+    intent: options.intent !== false,
     interactive: !!options.interactive,
     json: !!options.json,
     non_interactive: !!options.nonInteractive || !!options.yes,
@@ -221,6 +222,7 @@ function getResolvedCreateTelemetryProperties(
     framework: sanitizeId(finalOptions.framework.id),
     git: finalOptions.git,
     install: finalOptions.install !== false,
+    intent: finalOptions.intent,
     package_manager: finalOptions.packageManager,
     router_only: !!cliOptions.routerOnly,
     toolchain: toolchain ? sanitizeId(toolchain.id) : undefined,
@@ -238,7 +240,7 @@ export function cli({
   forcedDeployment,
   defaultFramework,
   frameworkDefinitionInitializers,
-  showDeploymentOptions = false,
+  showDeploymentOptions = true,
   legacyAutoCreate = false,
   defaultRouterOnly = false,
 }: {
@@ -649,9 +651,11 @@ export function cli({
             cliOptions.routerOnly = true
           }
 
-          cliOptions.framework = getFrameworkByName(
-            options.framework || defaultFramework || 'React',
-          )!.id
+          if (options.framework) {
+            cliOptions.framework = getFrameworkByName(options.framework)!.id
+          } else if (defaultFramework) {
+            cliOptions.framework = getFrameworkByName(defaultFramework)!.id
+          }
 
           const nonInteractive = !!cliOptions.nonInteractive || !!cliOptions.yes
           if (cliOptions.interactive && nonInteractive) {
@@ -660,16 +664,23 @@ export function cli({
             )
           }
 
-          const addOnsFlagPassed = process.argv.includes('--add-ons')
+          const hasInteractiveTerminal =
+            !!process.stdin.isTTY && !!process.stdout.isTTY && !process.env.CI
           const wantsInteractiveMode =
             !nonInteractive &&
-            (cliOptions.interactive ||
-              (cliOptions.addOns === true && addOnsFlagPassed))
+            (cliOptions.interactive || hasInteractiveTerminal)
 
           let finalOptions: Options | undefined
           if (wantsInteractiveMode) {
-            cliOptions.addOns = true
+            if (cliOptions.addOns === undefined) {
+              cliOptions.addOns = true
+            }
           } else {
+            if (!cliOptions.framework) {
+              cliOptions.framework = getFrameworkByName(
+                defaultFramework || 'React',
+              )!.id
+            }
             finalOptions = await normalizeOptions(
               cliOptions,
               forcedAddOns,
@@ -677,18 +688,16 @@ export function cli({
             )
           }
 
-          if (nonInteractive) {
-            if (cliOptions.addOns === true) {
-              throw new Error(
-                'When using --non-interactive/--yes, pass explicit add-ons via --add-ons <ids>.',
-              )
-            }
+          if (!wantsInteractiveMode && cliOptions.addOns === true) {
+            throw new Error(
+              'When running non-interactively, pass explicit add-ons via --add-ons <ids>.',
+            )
           }
 
           if (finalOptions) {
             intro(`Creating a new ${appName} app in ${projectName}...`)
           } else {
-            if (nonInteractive) {
+            if (!wantsInteractiveMode) {
               throw new Error(
                 'Project name is required in non-interactive mode. Pass [project-name] or --target-dir.',
               )
@@ -696,7 +705,11 @@ export function cli({
             intro(`Let's configure your ${appName} application`)
             finalOptions = await promptForCreateOptions(cliOptions, {
               forcedAddOns,
+              forcedDeployment,
               showDeploymentOptions,
+              defaultFrameworkId: defaultFramework
+                ? getFrameworkByName(defaultFramework)?.id
+                : undefined,
             })
           }
 
@@ -756,7 +769,6 @@ export function cli({
           }
           return value
         },
-        defaultFramework || 'React',
       )
     }
 
@@ -865,6 +877,14 @@ export function cli({
       .option('--json', 'output JSON for automation', false)
       .option('--git', 'create a git repository')
       .option('--no-git', 'do not create a git repository')
+      .option(
+        '--intent',
+        'set up TanStack Intent skill mappings for coding agents',
+      )
+      .option(
+        '--no-intent',
+        'skip TanStack Intent setup',
+      )
       .option(
         '--target-dir <path>',
         'the target directory for the application root',
@@ -1431,7 +1451,15 @@ Remove your node_modules directory and package lock file and re-install.`,
       'Name of the add-ons (or add-ons separated by spaces or commas)',
     )
     .option('--forced', 'Force the add-on to be added', false)
-    .action(async (addOns: Array<string>, options: { forced: boolean }) => {
+    .option(
+      '--intent',
+      'set up TanStack Intent skill mappings for coding agents',
+    )
+    .option(
+      '--no-intent',
+      'skip TanStack Intent setup',
+    )
+    .action(async (addOns: Array<string>, options: { forced: boolean; intent?: boolean }) => {
       try {
         await runWithTelemetry(
           'add',
@@ -1462,6 +1490,7 @@ Remove your node_modules directory and package lock file and re-install.`,
               if (selectedAddOns.length) {
                 await addToApp(environment, selectedAddOns, resolve(process.cwd()), {
                   forced: options.forced,
+                  intent: options.intent,
                 })
               }
               return
@@ -1474,6 +1503,7 @@ Remove your node_modules directory and package lock file and re-install.`,
             })
             await addToApp(environment, parsedAddOns, resolve(process.cwd()), {
               forced: options.forced,
+              intent: options.intent,
             })
           },
         )

@@ -1,5 +1,99 @@
 # @tanstack/cli
 
+## 0.65.0
+
+### Minor Changes
+
+- feat(cli): auto-install TanStack Intent during scaffolding ([#442](https://github.com/TanStack/cli/pull/442))
+
+  `tanstack create` and `tanstack add` now run `npx @tanstack/intent install`
+  after dependency installation, wiring up skill mappings for coding agents.
+  The behavior is controlled by a new `--intent` / `--no-intent` flag (default
+  on) and persists to `.cta.json` so subsequent `add` invocations honor the
+  original choice. Failures are surfaced as warnings instead of aborting the
+  scaffold.
+
+### Patch Changes
+
+- Updated dependencies [[`37e83fb`](https://github.com/TanStack/cli/commit/37e83fbf324c6d60da09a4f2f268f540c8687d5f)]:
+  - @tanstack/create@0.64.0
+
+## 0.64.6
+
+### Patch Changes
+
+- fix(cli): make add-on multiselect keyboard controls discoverable ([#441](https://github.com/TanStack/cli/pull/441))
+
+  Users encountering the add-on multiselect prompt during `tanstack create`
+  often didn't realize the entries are checkboxes (toggle with Space) and
+  that the selection must be confirmed with Enter. The existing keyboard
+  shortcuts note was only shown once per session and could appear before
+  single-select prompts where it didn't apply. Now:
+
+  - The "Keyboard Shortcuts" note is shown immediately above every
+    multiselect prompt and is no longer shown before single-select prompts.
+  - The multiselect message itself includes an inline `(Space to toggle,
+Enter to confirm)` hint so the cue is inseparable from the prompt.
+
+## 0.64.5
+
+### Patch Changes
+
+- Updated dependencies [[`e38729f`](https://github.com/TanStack/cli/commit/e38729fe0b6a16e8d34417d2334baf2b2db94942)]:
+  - @tanstack/create@0.63.9
+
+## 0.64.4
+
+### Patch Changes
+
+- fix(cli): require Node.js >=20 and surface a clear error on older runtimes ([#438](https://github.com/TanStack/cli/pull/438))
+
+  Older Node versions (e.g. Node 16) lack `events.addAbortListener`, which is
+  used transitively by the CLI. Running on those versions produced a cryptic
+  `SyntaxError: ... does not provide an export named 'addAbortListener'` during
+  module instantiation. Both packages now declare `engines.node: ">=20"` so
+  package managers warn at install time, and the CLI bin performs an early
+  runtime check that prints an actionable message before any modules load.
+
+  Closes #433
+
+- Updated dependencies [[`0a8be74`](https://github.com/TanStack/cli/commit/0a8be74ff1300ed55c91a50da07312ee1feb478e)]:
+  - @tanstack/create@0.63.8
+
+## 0.64.3
+
+### Patch Changes
+
+- Updated dependencies [[`1b2091b`](https://github.com/TanStack/cli/commit/1b2091b8bdaf0e2e90f42cf268e91cbd18d6be3f)]:
+  - @tanstack/create@0.63.7
+
+## 0.64.2
+
+### Patch Changes
+
+- Auto-generated changeset from semantic commits on main.
+
+  - chore: update to TS6.0, fix deprecated tsconfig options (#421) (847b396)
+
+- Updated dependencies []:
+  - @tanstack/create@0.63.6
+
+## 0.64.1
+
+### Patch Changes
+
+- Fix interactive mode not prompting for all options. ([#435](https://github.com/TanStack/cli/pull/435))
+
+  - Default to interactive mode. Previously, `tanstack create my-app` silently applied defaults for framework, deployment, and install. Opt out with `--yes` / `--non-interactive`.
+  - Add framework selection prompt when the CLI supports multiple frameworks and no `--framework` flag is passed.
+  - Add "install dependencies now?" prompt when `--no-install` is not passed.
+  - Show deployment adapter prompt by default (previously required `showDeploymentOptions: true`).
+  - Honor `forcedDeployment` as the default selection in the deployment prompt, so deprecated aliases keep a sensible default.
+  - Preserve explicit `--add-ons` arrays instead of overwriting them with the interactive sentinel.
+
+- Updated dependencies [[`e3de582`](https://github.com/TanStack/cli/commit/e3de582f050bff32009d3ebefffbb9ec94a15c92)]:
+  - @tanstack/create@0.63.5
+
 ## 0.64.0
 
 ### Minor Changes
